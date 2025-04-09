@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resposta Especial</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffebee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            transition: background-color 0.5s;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        .container {
+            padding: 20px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            margin: 20px;
+        }
+        
+        h1 {
+            color: #e91e63;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+        
+        #yesBtn {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        #noBtn {
+            background-color: #f44336;
+            color: white;
+            position: relative;
+            touch-action: none;
+        }
+        
+        .emoji-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .emoji {
+            position: absolute;
+            font-size: 30px;
+            animation: floatUp 3s linear forwards;
+            user-select: none;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="question">Me da o cuzinho?</h1>
+        <div class="buttons">
+            <button id="yesBtn">Sim</button>
+            <button id="noBtn">Não</button>
+        </div>
+    </div>
+    
+    <div class="emoji-container" id="emojiContainer"></div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const question = document.getElementById('question');
+        const emojiContainer = document.getElementById('emojiContainer');
+        let clickCount = 0;
+        const emojis = ['🎉', '🎊', '🎈', '💃', '🕺', '🥳', '🎁', '✨', '❤️', '😍'];
+        
+        // Função para mover o botão Não
+        function moveButton() {
+            if (clickCount < 10) {
+                const maxX = window.innerWidth - noBtn.offsetWidth;
+                const maxY = window.innerHeight - noBtn.offsetHeight;
+                
+                const x = Math.random() * maxX;
+                const y = Math.random() * maxY;
+                
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = `${x}px`;
+                noBtn.style.top = `${y}px`;
+            }
+        }
+        
+        // Eventos para desktop
+        noBtn.addEventListener('mouseover', moveButton);
+        
+        // Eventos para mobile (toque)
+        noBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            moveButton();
+            clickCount++;
+            
+            if (clickCount >= 10) {
+                transformNoButton();
+            }
+        }, {passive: false});
+        
+        noBtn.addEventListener('click', function() {
+            clickCount++;
+            
+            if (clickCount >= 10) {
+                transformNoButton();
+            }
+        });
+        
+        yesBtn.addEventListener('click', celebrate);
+        yesBtn.addEventListener('touchend', celebrate);
+        
+        function transformNoButton() {
+            noBtn.textContent = 'Sim';
+            noBtn.id = 'noToYesBtn';
+            noBtn.style.backgroundColor = '#4caf50';
+            noBtn.style.position = 'static';
+            
+            // Remove os event listeners antigos
+            noBtn.replaceWith(noBtn.cloneNode(true));
+            
+            // Adiciona novos listeners para o botão transformado
+            const transformedBtn = document.getElementById('noToYesBtn');
+            transformedBtn.addEventListener('click', celebrate);
+            transformedBtn.addEventListener('touchend', celebrate);
+        }
+        
+        function celebrate(e) {
+            if (e) e.preventDefault();
+            
+            // Muda o texto e esconde os botões
+            question.textContent = 'Obrigado! 💖';
+            document.querySelector('.buttons').classList.add('hidden');
+            
+            // Muda o fundo para algo mais festivo
+            document.body.style.backgroundColor = '#ffcdd2';
+            
+            // Solta emojis de festa
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createEmoji();
+                }, i * 200);
+            }
+        }
+        
+        function createEmoji() {
+            const emoji = document.createElement('div');
+            emoji.className = 'emoji';
+            emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            const x = Math.random() * window.innerWidth;
+            emoji.style.left = `${x}px`;
+            emoji.style.bottom = '0';
+            
+            emojiContainer.appendChild(emoji);
+            
+            // Remove o emoji após a animação terminar
+            setTimeout(() => {
+                emoji.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
