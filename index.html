@@ -60,7 +60,7 @@
             color: white;
         }
         
-        #noBtn {
+        #noBtn, #fakeNoBtn {
             background-color: #f44336;
             color: white;
             position: relative;
@@ -109,17 +109,23 @@
                 font-size: 0.9rem;
             }
         }
+        
+        footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #888;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 id="question">Me da o cuzinho?</h1>
+        <h1 id="question">me da o cu?</h1>
         <div class="buttons">
             <button id="yesBtn">Sim</button>
             <button id="noBtn">Não</button>
         </div>
     </div>
-    <h8>Todos direitos reservados, github.com/barcate</h8>
+    <footer>Todos direitos reservados, github.com/barcate</footer>
     
     <div class="emoji-container" id="emojiContainer"></div>
 
@@ -131,28 +137,26 @@
         let clickCount = 0;
         const emojis = ['🎉', '🎊', '🎈', '💃', '🕺', '🥳', '🎁', '✨', '❤️', '😍'];
         
-        // Função para mover o botão Não
-        function moveButton() {
-            if (clickCount < 10) {
-                const maxX = window.innerWidth - noBtn.offsetWidth;
-                const maxY = window.innerHeight - noBtn.offsetHeight;
-                
-                const x = Math.random() * maxX;
-                const y = Math.random() * maxY;
-                
-                noBtn.style.position = 'fixed';
-                noBtn.style.left = `${x}px`;
-                noBtn.style.top = `${y}px`;
-            }
+        // Função para mover o botão Não/Sim falso
+        function moveButton(btn) {
+            const maxX = window.innerWidth - btn.offsetWidth;
+            const maxY = window.innerHeight - btn.offsetHeight;
+            
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            
+            btn.style.position = 'fixed';
+            btn.style.left = `${x}px`;
+            btn.style.top = `${y}px`;
         }
         
         // Eventos para desktop
-        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('mouseover', () => moveButton(noBtn));
         
         // Eventos para mobile (toque)
         noBtn.addEventListener('touchstart', function(e) {
             e.preventDefault();
-            moveButton();
+            moveButton(noBtn);
             clickCount++;
             
             if (clickCount >= 10) {
@@ -163,8 +167,10 @@
         noBtn.addEventListener('click', function() {
             clickCount++;
             
-            if (clickCount >= 20) {
+            if (clickCount >= 10) {
                 transformNoButton();
+            } else {
+                moveButton(noBtn);
             }
         });
         
@@ -172,18 +178,33 @@
         yesBtn.addEventListener('touchend', celebrate);
         
         function transformNoButton() {
-            noBtn.textContent = 'Sim';
-            noBtn.id = 'noToYesBtn';
-            noBtn.style.backgroundColor = '#4caf50';
-            noBtn.style.position = 'static';
+            // Remove o botão Não original
+            noBtn.remove();
             
-            // Remove os event listeners antigos
-            noBtn.replaceWith(noBtn.cloneNode(true));
+            // Cria um novo botão "Sim" que se comporta como o "Não"
+            const fakeNoBtn = document.createElement('button');
+            fakeNoBtn.textContent = 'Sim';
+            fakeNoBtn.id = 'fakeNoBtn';
             
-            // Adiciona novos listeners para o botão transformado
-            const transformedBtn = document.getElementById('noToYesBtn');
-            transformedBtn.addEventListener('click', celebrate);
-            transformedBtn.addEventListener('touchend', celebrate);
+            // Mantém a mesma aparência do botão "Não"
+            fakeNoBtn.style.backgroundColor = '#f44336';
+            fakeNoBtn.style.color = 'white';
+            fakeNoBtn.style.position = 'relative';
+            fakeNoBtn.style.touchAction = 'none';
+            
+            // Adiciona os mesmos comportamentos do botão "Não"
+            fakeNoBtn.addEventListener('mouseover', () => moveButton(fakeNoBtn));
+            fakeNoBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                moveButton(fakeNoBtn);
+            }, {passive: false});
+            fakeNoBtn.addEventListener('click', function() {
+                moveButton(fakeNoBtn);
+                celebrate();
+            });
+            
+            // Adiciona ao DOM
+            document.querySelector('.buttons').appendChild(fakeNoBtn);
         }
         
         function celebrate(e) {
