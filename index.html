@@ -43,7 +43,6 @@
             gap: 15px;
             justify-content: center;
             margin-top: 30px;
-            position: relative;
         }
         
         button {
@@ -59,13 +58,13 @@
         #yesBtn {
             background-color: #4caf50;
             color: white;
-            position: static;
         }
         
         #noBtn {
             background-color: #f44336;
             color: white;
-            position: absolute;
+            position: relative;
+            touch-action: none;
         }
         
         .emoji-container {
@@ -129,39 +128,64 @@
         const yesBtn = document.getElementById('yesBtn');
         const question = document.getElementById('question');
         const emojiContainer = document.getElementById('emojiContainer');
+        let clickCount = 0;
         const emojis = ['🎉', '🎊', '🎈', '💃', '🕺', '🥳', '🎁', '✨', '❤️', '😍'];
         
-        // Função para mover o botão Não aleatoriamente
+        // Função para mover o botão Não
         function moveButton() {
-            const maxX = window.innerWidth - noBtn.offsetWidth;
-            const maxY = window.innerHeight - noBtn.offsetHeight;
-            
-            const x = Math.random() * maxX;
-            const y = Math.random() * maxY;
-            
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+            if (clickCount < 1000) {
+                const maxX = window.innerWidth - noBtn.offsetWidth;
+                const maxY = window.innerHeight - noBtn.offsetHeight;
+                
+                const x = Math.random() * maxX;
+                const y = Math.random() * maxY;
+                
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = `${x}px`;
+                noBtn.style.top = `${y}px`;
+            }
         }
         
-        // Move o botão quando o mouse se aproxima (desktop)
+        // Eventos para desktop
         noBtn.addEventListener('mouseover', moveButton);
         
-        // Move o botão quando tocado (mobile)
+        // Eventos para mobile (toque)
         noBtn.addEventListener('touchstart', function(e) {
             e.preventDefault();
             moveButton();
+            clickCount++;
+            
+            if (clickCount >= 1000) {
+                transformNoButton();
+            }
         }, {passive: false});
         
-        // Move o botão quando clicado (fallback)
         noBtn.addEventListener('click', function() {
-            moveButton();
+            clickCount++;
+            
+            if (clickCount >= 1000) {
+                transformNoButton();
+            }
         });
         
-        // Configura o botão Sim
         yesBtn.addEventListener('click', celebrate);
         yesBtn.addEventListener('touchend', celebrate);
         
-        // Função de celebração
+        function transformNoButton() {
+            noBtn.textContent = 'Sim';
+            noBtn.id = 'noToYesBtn';
+            noBtn.style.backgroundColor = '#4caf50';
+            noBtn.style.position = 'static';
+            
+            // Remove os event listeners antigos
+            noBtn.replaceWith(noBtn.cloneNode(true));
+            
+            // Adiciona novos listeners para o botão transformado
+            const transformedBtn = document.getElementById('noToYesBtn');
+            transformedBtn.addEventListener('click', celebrate);
+            transformedBtn.addEventListener('touchend', celebrate);
+        }
+        
         function celebrate(e) {
             if (e) e.preventDefault();
             
@@ -196,9 +220,6 @@
                 emoji.remove();
             }, 3000);
         }
-        
-        // Move o botão Não periodicamente também (para dificultar)
-        setInterval(moveButton, 2000);
     </script>
 </body>
 </html>
